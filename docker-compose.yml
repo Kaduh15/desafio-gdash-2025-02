@@ -1,0 +1,50 @@
+services:
+  broker:
+    image: rabbitmq:3-management
+    container_name: broker
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_LOAD_DEFINITIONS: "true"
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbitmq_management load_definitions '/etc/rabbitmq/definitions.json'"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ./broker/definitions.json:/etc/rabbitmq/definitions.json:ro
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+  
+  weather_collector:
+    build: ./weather-collector
+    container_name: weather_collector
+    depends_on:
+      broker:
+        condition: service_healthy
+    environment:
+      - BROKER_HOST=broker
+      - BROKER_QUEUE=${BROKER_QUEUE:-weather_data}
+      - CITY=${CITY}
+      - LAT=${LAT}
+      - LON=${LON}
+      - INTERVAL_TIME=${INTERVAL_TIME:-hours}
+      - INTERVAL_VALUE=${INTERVAL_VALUE:-1}
+
+
+  worker:
+    build: ./worker
+    container_name: worker
+    depends_on:
+      broker:
+        condition: service_healthy
+      weather_collector:
+        condition: service_started
+    environment:
+      - BROKER_URL=${BROKER_URL:-amqp://admin:admin@broker:5672/}
+      - BROKER_QUEUE=${BROKER_QUEUE:-weather_data}
+      - API_URL=${API_URL:-http://weather_api:8000/weather-logs/webhook/}
+
+volumes:
+  rabbitmq_data:
