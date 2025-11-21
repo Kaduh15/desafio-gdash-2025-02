@@ -1,7 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"net/http"
+	"os"
+	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -14,7 +18,7 @@ func failOnError(err error, msg string) {
 }
 
 func getConnAmqp() (*amqp.Connection, error) {
-	conn, err := amqp.Dial("amqp://guest:guest@broker:5672/")
+	conn, err := amqp.Dial(os.Getenv("BROKER_URL"))
 	if err != nil {
 		return nil, err
 	}
@@ -48,8 +52,21 @@ func main() {
 
 	go func() {
 		for d := range msgs {
-			fmt.Printf("Received a message: %s\n", d.Body)
+			res, err := http.Post(
+				os.Getenv("API_URL"),
+				"application/json",
+				bytes.NewReader(d.Body),
+			)
+			if err != nil {
+				fmt.Printf("Failed to send HTTP request: %s\n", err)
+				d.Nack(false, true)
+				time.Sleep(1 * time.Second)
+				continue
+			}
+
+			res.Body.Close()
 			d.Ack(false)
+			time.Sleep(1 * time.Second)
 		}
 	}()
 
