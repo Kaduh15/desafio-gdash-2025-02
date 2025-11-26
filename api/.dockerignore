@@ -1,0 +1,54 @@
+# Dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Tests
+coverage/
+*.spec.ts
+*.test.ts
+test/
+e2e/
+
+# Documentation
+README.md
+*.md
+docs/
+
+# Git
+.git/
+.gitignore
+.github/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build artifacts
+dist/
+build/
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+.prettierrc
+.eslintrc.js
+# tsconfig.json
+nest-cli.json

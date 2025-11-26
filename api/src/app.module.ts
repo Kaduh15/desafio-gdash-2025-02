@@ -1,0 +1,8 @@
+import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
+import { WeatherModule } from './weather/weather.module';
+
+@Module({
+  imports: [WeatherModule, MongooseModule.forRoot(process.env.MONGO_URI!)],
+})
+export class AppModule {}
