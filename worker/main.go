@@ -11,10 +11,9 @@ import (
 )
 
 func init() {
-	err := godotenv.Load()
-	if err != nil {
-		panic("Error loading .env file")
-	}
+	godotenv.Load()
+
+	fmt.Println("Environment variables loaded")
 }
 
 func main() {
