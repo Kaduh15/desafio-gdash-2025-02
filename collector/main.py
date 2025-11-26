@@ -43,8 +43,6 @@ def fetch_weather_data():
 
     response = httpx.get(url, params=params)
 
-    print(response.url)
-
     if response.status_code != 200:
         raise Exception(
             f"Error fetching weather data: {response.status_code} - {response.text}"
@@ -61,8 +59,6 @@ def fetch_forecast():
         "units": "metric",
     }
     response = httpx.get(url, params=params)
-
-    print(response.url)
 
     if response.status_code != 200:
         raise Exception(
