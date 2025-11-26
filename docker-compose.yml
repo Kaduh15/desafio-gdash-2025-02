@@ -1,0 +1,41 @@
+services:
+  broker:
+    image: rabbitmq:3-management
+    container_name: broker
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ./broker/definitions.json:/etc/rabbitmq/definitions.json:ro
+      - ./broker/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+  
+
+  collector:
+    build: ./collector
+    container_name: collector
+    environment:
+      - BROKER_HOST=broker
+      - BROKER_QUEUE=${BROKER_QUEUE:-weather_logs}
+      - BROKER_USER=${BROKER_USER:-admin}
+      - BROKER_PASSWORD=${BROKER_PASSWORD:-admin}
+      - SCHEDULER_INTERVAL_MINUTES=${SCHEDULER_INTERVAL_MINUTES:-30}
+      - API_KEY_OPENWEATHER=${API_KEY_OPENWEATHER}
+      - CITY=${CITY}
+    depends_on:
+      broker:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  rabbitmq_data:
