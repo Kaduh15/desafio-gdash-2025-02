@@ -37,5 +37,18 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+
+  worker:
+    build: ./worker
+    container_name: worker
+    environment:
+      - BROKER_URL=${BROKER_URL:-amqp://admin:admin@broker:5672/}
+      - BROKER_QUEUE=${BROKER_QUEUE:-weather_logs}
+      - URL_WEBHOOK=${URL_WEBHOOK}
+    depends_on:
+      broker:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   rabbitmq_data:
